@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { getProjectPath } from "./utils";
+import { getProjectPath } from "../utils";
 
 export default function (context: vscode.ExtensionContext) {
   // 注册代码建议提示，只有当按下“.”时才触发
-  let description = vscode.languages.registerCompletionItemProvider(
+  let disposable = vscode.languages.registerCompletionItemProvider(
     "javascript",
     {
       provideCompletionItems,
@@ -11,7 +11,7 @@ export default function (context: vscode.ExtensionContext) {
     },
     "."
   );
-  context.subscriptions.push(description);
+  context.subscriptions.push(disposable);
 }
 
 /**

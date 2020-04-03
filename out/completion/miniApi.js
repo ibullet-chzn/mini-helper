@@ -1,7 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const util = require("./util");
+const utils_1 = require("../utils");
+function default_1(context) {
+    // 注册代码建议提示，只有当按下“.”时才触发
+    let disposable = vscode.languages.registerCompletionItemProvider("javascript", {
+        provideCompletionItems,
+        resolveCompletionItem,
+    }, ".");
+    context.subscriptions.push(disposable);
+}
+exports.default = default_1;
 /**
  * 自动提示实现，这里模拟一个很简单的操作
  * 当输入 this.dependencies.xxx时自动把package.json中的依赖带出来
@@ -13,7 +22,7 @@ const util = require("./util");
  */
 function provideCompletionItems(document, position, token, context) {
     const line = document.lineAt(position);
-    const projectPath = util.getProjectPath(document);
+    const projectPath = utils_1.getProjectPath(document);
     // 只截取到光标位置为止，防止一些特殊情况
     const lineText = line.text.substring(0, position.character);
     // 简单匹配，只要当前光标前的字符串为`this.dependencies.`都自动带出所有的依赖
@@ -34,11 +43,4 @@ function provideCompletionItems(document, position, token, context) {
 function resolveCompletionItem(item, token) {
     return null;
 }
-module.exports = function (context) {
-    // 注册代码建议提示，只有当按下“.”时才触发
-    context.subscriptions.push(vscode.languages.registerCompletionItemProvider("javascript", {
-        provideCompletionItems,
-        resolveCompletionItem,
-    }, "."));
-};
-//# sourceMappingURL=comple.js.map
+//# sourceMappingURL=miniApi.js.map

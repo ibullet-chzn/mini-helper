@@ -12,8 +12,15 @@
 	"activationEvents": [
 		"onCommand:extension.helloWorld",
 		"onLanguage:json",
-		"onLanguage:javascript"
+		"onLanguage:javascript",
+		"onLanguage:html",
+		"onLanguage:wxml"
 	],
+	"languages": [{
+		"id": "html",
+		"extensions": [ ".html", ".wxml" ],
+		"aliases": [ "Html", "Wxml" ]
+	}],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
@@ -24,7 +31,7 @@
 					"default": false,
 					"description": "miniHelper is."
 				},
-				"c.text": {
+				"miniHelper.text": {
 					"type": [
 						"string",
 						"null"
