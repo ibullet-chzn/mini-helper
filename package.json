@@ -16,11 +16,19 @@
 		"onLanguage:html",
 		"onLanguage:wxml"
 	],
-	"languages": [{
-		"id": "html",
-		"extensions": [ ".html", ".wxml" ],
-		"aliases": [ "Html", "Wxml" ]
-	}],
+	"languages": [
+		{
+			"id": "html",
+			"extensions": [
+				".html",
+				".wxml"
+			],
+			"aliases": [
+				"Html",
+				"Wxml"
+			]
+		}
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
@@ -92,7 +100,6 @@
 		"mocha": "^7.0.1",
 		"prettier": "^2.0.2",
 		"typescript": "^3.7.5",
-		"vscode": "^1.1.36",
 		"vscode-test": "^1.3.0"
 	}
 }
