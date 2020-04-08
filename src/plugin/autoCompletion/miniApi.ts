@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
-import { getProjectPath } from "../utils";
+import { getProjectPath } from "../../utils";
 
 export default function (context: vscode.ExtensionContext) {
-  // 注册代码建议提示，只有当按下“ ”时才触发
+  // 注册代码建议提示，只有当按下“.”时才触发
   let disposable = vscode.languages.registerCompletionItemProvider(
-    "wxml",
+    "javascript",
     {
       provideCompletionItems,
       resolveCompletionItem,
     },
-    " "
+    "."
   );
   context.subscriptions.push(disposable);
 }
@@ -29,14 +29,23 @@ function provideCompletionItems(
   token: vscode.CancellationToken,
   context: vscode.CompletionContext
 ) {
-  const dependencies = ["a", "b"];
-  console.log(dependencies);
-  let a = dependencies.map((dep) => {
-    // vscode.CompletionItemKind 表示提示的类型
-    return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
-  });
-  console.log(a);
-  return a;
+  const line = document.lineAt(position);
+  const projectPath = getProjectPath(document);
+
+  // 只截取到光标位置为止，防止一些特殊情况
+  const lineText = line.text.substring(0, position.character);
+  // 简单匹配，只要当前光标前的字符串为`this.dependencies.`都自动带出所有的依赖
+  if (/(^|=| )\w+\.dependencies\.$/g.test(lineText)) {
+    const json = require(`${projectPath}/package.json`);
+    const dependencies = Object.keys(json.dependencies || {}).concat(
+      Object.keys(json.devDependencies || {})
+    );
+
+    return dependencies.map((dep) => {
+      // vscode.CompletionItemKind 表示提示的类型
+      return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
+    });
+  }
 }
 
 /**

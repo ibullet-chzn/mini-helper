@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const utils_1 = require("../utils");
+const utils_1 = require("../../utils");
 function default_1(context) {
     // 注册代码建议提示，只有当按下“.”时才触发
     let disposable = vscode.languages.registerCompletionItemProvider("javascript", {
