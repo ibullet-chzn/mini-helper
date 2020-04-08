@@ -31,10 +31,12 @@ function provideCompletionItems(
 ) {
   const dependencies = ["a", "b"];
   console.log(dependencies);
-  return dependencies.map((dep) => {
+  let a = dependencies.map((dep) => {
     // vscode.CompletionItemKind 表示提示的类型
     return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
   });
+  console.log(a);
+  return a;
 }
 
 /**

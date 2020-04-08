@@ -22,10 +22,12 @@ exports.default = default_1;
 function provideCompletionItems(document, position, token, context) {
     const dependencies = ["a", "b"];
     console.log(dependencies);
-    return dependencies.map((dep) => {
+    let a = dependencies.map((dep) => {
         // vscode.CompletionItemKind 表示提示的类型
         return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
     });
+    console.log(a);
+    return a;
 }
 /**
  * 光标选中当前自动补全item时触发动作，一般情况下无需处理
