@@ -21,6 +21,7 @@ exports.default = default_1;
  * @param {*} context
  */
 function provideCompletionItems(document, position, token, context) {
+    console.log(document.getText());
     const line = document.lineAt(position);
     const projectPath = utils_1.getProjectPath(document);
     // 只截取到光标位置为止，防止一些特殊情况

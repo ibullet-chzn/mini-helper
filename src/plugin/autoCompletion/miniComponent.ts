@@ -1,43 +1,82 @@
-import * as vscode from "vscode";
-import { getProjectPath } from "../../utils";
+import {
+  languages,
+  ExtensionContext,
+  TextDocument,
+  Position,
+  CancellationToken,
+  CompletionContext,
+  CompletionItem,
+  CompletionItemKind,
+} from "vscode";
 
-export default function (context: vscode.ExtensionContext) {
-  // 注册代码建议提示，只有当按下“ ”时才触发
-  let disposable = vscode.languages.registerCompletionItemProvider(
+import { WxmlSnippets, Snippet } from "../../mini/component";
+import { getLastChar } from "../../lib/helper";
+import { getWxmlTag } from "../../lib/wxmlHelper";
+
+export default function (context: ExtensionContext) {
+  // 根据微信文档 获取需要自动提示的字符
+  let wxmlTrigger = WxmlSnippets.map((item: Snippet) => item.trigger);
+  let disposable = languages.registerCompletionItemProvider(
     "wxml",
     {
       provideCompletionItems,
       resolveCompletionItem,
     },
-    " "
+    " ",
+    "\n",
+    ...wxmlTrigger
   );
   context.subscriptions.push(disposable);
 }
 
 /**
- * 自动提示实现，这里模拟一个很简单的操作
- * 当输入 this.dependencies.xxx时自动把package.json中的依赖带出来
- * 当然这个例子没啥实际意义，仅仅是为了演示如何实现功能
+ * 自动提示实现
  * @param {*} document
  * @param {*} position
  * @param {*} token
  * @param {*} context
  */
 function provideCompletionItems(
-  document: vscode.TextDocument,
-  position: vscode.Position,
-  token: vscode.CancellationToken,
-  context: vscode.CompletionContext
+  document: TextDocument,
+  position: Position,
+  token: CancellationToken,
+  context: CompletionContext
 ) {
-  const dependencies = ["a", "b"];
-  console.log(dependencies);
-  return dependencies.map((dep) => {
-    // vscode.CompletionItemKind 表示提示的类型
-    return {
-      ...new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field),
-      insertText: 'a="{{}}"',
-    };
-  });
+  // token表示由于用户继续输入而取消当前事件
+  if (token.isCancellationRequested) {
+    return Promise.resolve([]);
+  }
+  // 用户输入的最后一个字符
+  let char = context.triggerCharacter || getLastChar(document, position);
+  switch (char) {
+    case " ":
+      const tag = getWxmlTag(document, position);
+      console.log(tag);
+      const dependencies = ["a", "b"];
+      return dependencies.map((dep) => {
+        return new CompletionItem(dep, CompletionItemKind.Field);
+      });
+    default:
+      if (char >= "a" && char <= "z") {
+        const tag = getWxmlTag(document, position);
+        console.log(tag);
+      }
+      let wxmlCompletionItems: Snippet[] = [];
+      WxmlSnippets.forEach((item: Snippet) => {
+        if (item.trigger === char) {
+          wxmlCompletionItems.push(item);
+        }
+      });
+      return wxmlCompletionItems.map((item: Snippet) => {
+        let wxmlCompletionItem = new CompletionItem(
+          item.label,
+          CompletionItemKind.Field
+        );
+        wxmlCompletionItem.insertText = item.insertText;
+        wxmlCompletionItem.documentation = item.documentation;
+        return wxmlCompletionItem;
+      });
+  }
 }
 
 /**
@@ -45,9 +84,6 @@ function provideCompletionItems(
  * @param {*} item
  * @param {*} token
  */
-function resolveCompletionItem(
-  item: vscode.CompletionItem,
-  token: vscode.CancellationToken
-) {
+function resolveCompletionItem(item: CompletionItem, token: CancellationToken) {
   return null;
 }

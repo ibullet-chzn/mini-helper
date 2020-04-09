@@ -29,6 +29,7 @@ function provideCompletionItems(
   token: vscode.CancellationToken,
   context: vscode.CompletionContext
 ) {
+  console.log(document.getText());
   const line = document.lineAt(position);
   const projectPath = getProjectPath(document);
 
