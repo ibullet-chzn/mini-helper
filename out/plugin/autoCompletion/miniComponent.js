@@ -10,7 +10,7 @@ function default_1(context) {
     let disposable = vscode_1.languages.registerCompletionItemProvider("wxml", {
         provideCompletionItems,
         resolveCompletionItem,
-    }, " ", "\n", ...wxmlTrigger);
+    }, " ", ":", "\n", ...wxmlTrigger);
     context.subscriptions.push(disposable);
 }
 exports.default = default_1;
@@ -27,32 +27,27 @@ function provideCompletionItems(document, position, token, context) {
         return Promise.resolve([]);
     }
     // 用户输入的最后一个字符
-    let char = context.triggerCharacter || helper_1.getLastChar(document, position);
-    switch (char) {
-        case " ":
-            const tag = wxmlHelper_1.getWxmlTag(document, position);
-            console.log(tag);
-            const dependencies = ["a", "b"];
-            return dependencies.map((dep) => {
-                return new vscode_1.CompletionItem(dep, vscode_1.CompletionItemKind.Field);
-            });
-        default:
-            if (char >= "a" && char <= "z") {
-                const tag = wxmlHelper_1.getWxmlTag(document, position);
-                console.log(tag);
+    let inputCharacter = context.triggerCharacter || helper_1.getLastChar(document, position);
+    console.log(inputCharacter);
+    // 解析用户输入的标签内容
+    const wxmlTag = wxmlHelper_1.getWxmlTag(document, position);
+    switch (inputCharacter) {
+        case ":":
+            if (wxmlTag) {
+                return wxmlHelper_1.searchBubblingEvents(wxmlTag);
             }
-            let wxmlCompletionItems = [];
-            component_1.WxmlSnippets.forEach((item) => {
-                if (item.trigger === char) {
-                    wxmlCompletionItems.push(item);
+        case " ":
+            if (wxmlTag) {
+                return wxmlHelper_1.searchWxmlTagAttribute(wxmlTag);
+            }
+        default:
+            if (inputCharacter >= "a" && inputCharacter <= "z") {
+                if (!wxmlTag) {
+                    return wxmlHelper_1.searchWxmlTagName(inputCharacter);
                 }
-            });
-            return wxmlCompletionItems.map((item) => {
-                let wxmlCompletionItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
-                wxmlCompletionItem.insertText = item.insertText;
-                wxmlCompletionItem.documentation = item.documentation;
-                return wxmlCompletionItem;
-            });
+                return [...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag), ...wxmlHelper_1.searchBindingEvents()];
+            }
+            return [];
     }
 }
 /**

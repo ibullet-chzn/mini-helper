@@ -1,4 +1,4 @@
-import { MarkdownString } from "vscode";
+import { SnippetString, MarkdownString } from "vscode";
 
 export namespace Mini {
   export interface Attribute {
@@ -8,9 +8,6 @@ export namespace Mini {
     required?: boolean;
     documentation?: string | MarkdownString;
     version?: string;
-  }
-
-  export interface Attributes {
-    [index: number]: Attribute;
+    insertText?: string | SnippetString;
   }
 }

@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const vscode_1 = require("vscode");
+const commond_1 = require("../vs/commond");
 const regular_1 = require("../lib/regular");
+const event_1 = require("../mini/event");
+const component_1 = require("../mini/component");
 /**
  * 参考 https://github.com/wx-minapp/minapp-vscode/tree/master/src/plugin/getTagAtPosition
  */
 /**
- * 解析'光标'所属的标签数据
+ * 解析'光标'所属的标签的起止位置
  */
 exports.getBracketRange = (doc, pos) => {
     const text = doc.getText();
@@ -20,7 +24,7 @@ exports.getBracketRange = (doc, pos) => {
         return null;
     }
     // 2 找 > 结束标签
-    let endBracket = text.indexOf(">", offset + 1);
+    let endBracket = text.indexOf(">", offset);
     // 未找到闭合 > 文件结束位置为结束
     if (endBracket < 0) {
         endBracket = text.length;
@@ -38,6 +42,9 @@ exports.getBracketRange = (doc, pos) => {
  * 生成指定字符的替换函数
  */
 exports.replacer = (char) => (raw) => char.repeat(raw.length);
+/**
+ * 解析用户输入的标签内容
+ */
 exports.getWxmlTag = (doc, pos) => {
     const range = exports.getBracketRange(doc, pos);
     if (!range) {
@@ -50,24 +57,105 @@ exports.getWxmlTag = (doc, pos) => {
     let pureText = text.replace(/\{\{[^\}]*?\}\}/g, exports.replacer("^"));
     let attrFlagText = pureText.replace(/("[^"]*"|'[^']*')/g, exports.replacer("%")); // 将引号中的内容也替换了
     attrFlagText = attrFlagText.substr(start, length);
-    const tagNameMatcher = attrFlagText.match(/^<([\w-:.]+)/);
+    const tagNameMatcher = attrFlagText.match(regular_1.REGEXP_TAG_NAME);
     if (!tagNameMatcher) {
         return null;
     }
     const name = tagNameMatcher[1]; // 标签名称
     const tagText = text.substr(start, length);
-    const t = 'bindscroll="" class="" scrolltop=""';
+    const attrstr = tagText.substr(tagNameMatcher[0].length); // 属性部分原始字符串
     const r = new RegExp(regular_1.REGEXP_TAG_ATTR, "g");
     let result = 0;
-    while (result !== null) {
-        result = r.exec(t);
-        console.log(result);
+    let attribute = [];
+    while ((result = r.exec(attrstr)) !== null) {
+        // 轮训找到所有的属性 [0]完整内容 [1]属性名 [2]= [3]"属性值"
+        attribute.push(result);
     }
     const inputWordRange = doc.getWordRangeAtPosition(pos, /\b[\w-:.]+\b/);
-    const posWord = inputWordRange ? doc.getText(inputWordRange) : ""; // 正在输入的词
+    const input = inputWordRange ? doc.getText(inputWordRange) : ""; // 正在输入的词
     return {
         name,
-        posWord,
+        attribute,
+        input,
     };
+};
+/**
+ * 匹配标签名
+ */
+exports.searchWxmlTagName = (inputCharacter) => {
+    let wxmlCompletionItems = [];
+    component_1.WxmlSnippets.forEach((item) => {
+        if (item.trigger === inputCharacter) {
+            wxmlCompletionItems.push(item);
+        }
+    });
+    return wxmlCompletionItems.map((item) => {
+        let wxmlCompletionItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        wxmlCompletionItem.insertText = item.insertText;
+        wxmlCompletionItem.documentation = item.documentation;
+        return wxmlCompletionItem;
+    });
+};
+/**
+ * 匹配属性名
+ */
+exports.searchWxmlTagAttribute = (wxmlTag) => {
+    let wxmlAttributesItems = [];
+    component_1.WxmlSnippets.forEach((item) => {
+        var _a;
+        // 匹配对应的标签名
+        if (item.label === wxmlTag.name) {
+            // 已有属性-匹配
+            if (wxmlTag.attribute.length > 0) {
+                (_a = item.attribute) === null || _a === void 0 ? void 0 : _a.forEach((attribute) => {
+                    let matchResult = true;
+                    wxmlTag.attribute.forEach((RegExpAttribute) => {
+                        if (RegExpAttribute[1] === attribute.label) {
+                            matchResult = false;
+                        }
+                    });
+                    if (matchResult) {
+                        wxmlAttributesItems === null || wxmlAttributesItems === void 0 ? void 0 : wxmlAttributesItems.push(attribute);
+                    }
+                });
+            }
+            else {
+                // 无属性直接全量返回
+                wxmlAttributesItems = item.attribute;
+            }
+        }
+    });
+    return wxmlAttributesItems.map((item) => {
+        let wxmlAttributesItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        wxmlAttributesItem.insertText = item.insertText;
+        wxmlAttributesItem.documentation = item.documentation;
+        return wxmlAttributesItem;
+    });
+};
+/**
+ * 事件绑定
+ */
+exports.searchBindingEvents = () => {
+    return event_1.BindingEvents.map((item) => {
+        let wxmlBindingEvent = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        wxmlBindingEvent.command = commond_1.triggerSuggest;
+        return wxmlBindingEvent;
+    });
+};
+/**
+ * 冒泡事件
+ */
+exports.searchBubblingEvents = (wxmlTag) => {
+    console.log(wxmlTag);
+    let wxmlBubblingEventsItems = [];
+    event_1.BubblingEvents.forEach((item) => {
+        console.log(item);
+        wxmlBubblingEventsItems.push(item);
+    });
+    return wxmlBubblingEventsItems.map((item) => {
+        let wxmlBubblingEventsItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        wxmlBubblingEventsItem.insertText = item.insertText;
+        return wxmlBubblingEventsItem;
+    });
 };
 //# sourceMappingURL=wxmlHelper.js.map

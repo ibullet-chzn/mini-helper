@@ -1,23 +1,28 @@
 import { SnippetString, MarkdownString } from "vscode";
 import { Mini } from "./mini";
 
-export interface Snippet {
+export interface WxmlSnippet {
   label: string;
   trigger: string;
-  attribute?: Mini.Attributes;
+  attribute?: Mini.Attribute[];
   insertText?: string | SnippetString;
   documentation?: string | MarkdownString;
 }
 
-export const WxmlSnippets: Snippet[] = [
+export const WxmlSnippets: WxmlSnippet[] = [
   {
     label: "view",
     trigger: "v",
     attribute: [
       {
         label: "hover-class",
+        type: "string",
+        default: "none",
+        required: false,
+        version: "1.0.0",
         documentation:
           "指定按下去的样式类。当 hover-class='none' 时，没有点击态效果",
+        insertText: new SnippetString('hover-class="none"'),
       },
       {
         label: "hover-stop-propagation",

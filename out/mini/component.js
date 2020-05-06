@@ -8,7 +8,12 @@ exports.WxmlSnippets = [
         attribute: [
             {
                 label: "hover-class",
+                type: "string",
+                default: "none",
+                required: false,
+                version: "1.0.0",
                 documentation: "指定按下去的样式类。当 hover-class='none' 时，没有点击态效果",
+                insertText: new vscode_1.SnippetString('hover-class="none"'),
             },
             {
                 label: "hover-stop-propagation",

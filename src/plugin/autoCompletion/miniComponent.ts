@@ -9,13 +9,19 @@ import {
   CompletionItemKind,
 } from "vscode";
 
-import { WxmlSnippets, Snippet } from "../../mini/component";
+import { WxmlSnippets, WxmlSnippet } from "../../mini/component";
 import { getLastChar } from "../../lib/helper";
-import { getWxmlTag } from "../../lib/wxmlHelper";
+import {
+  getWxmlTag,
+  searchWxmlTagName,
+  searchWxmlTagAttribute,
+  searchBindingEvents,
+  searchBubblingEvents,
+} from "../../lib/wxmlHelper";
 
 export default function (context: ExtensionContext) {
   // 根据微信文档 获取需要自动提示的字符
-  let wxmlTrigger = WxmlSnippets.map((item: Snippet) => item.trigger);
+  let wxmlTrigger = WxmlSnippets.map((item: WxmlSnippet) => item.trigger);
   let disposable = languages.registerCompletionItemProvider(
     "wxml",
     {
@@ -23,6 +29,7 @@ export default function (context: ExtensionContext) {
       resolveCompletionItem,
     },
     " ",
+    ":",
     "\n",
     ...wxmlTrigger
   );
@@ -47,35 +54,28 @@ function provideCompletionItems(
     return Promise.resolve([]);
   }
   // 用户输入的最后一个字符
-  let char = context.triggerCharacter || getLastChar(document, position);
-  switch (char) {
-    case " ":
-      const tag = getWxmlTag(document, position);
-      console.log(tag);
-      const dependencies = ["a", "b"];
-      return dependencies.map((dep) => {
-        return new CompletionItem(dep, CompletionItemKind.Field);
-      });
-    default:
-      if (char >= "a" && char <= "z") {
-        const tag = getWxmlTag(document, position);
-        console.log(tag);
+  let inputCharacter =
+    context.triggerCharacter || getLastChar(document, position);
+  console.log(inputCharacter);
+  // 解析用户输入的标签内容
+  const wxmlTag = getWxmlTag(document, position);
+  switch (inputCharacter) {
+    case ":":
+      if (wxmlTag) {
+        return searchBubblingEvents(wxmlTag);
       }
-      let wxmlCompletionItems: Snippet[] = [];
-      WxmlSnippets.forEach((item: Snippet) => {
-        if (item.trigger === char) {
-          wxmlCompletionItems.push(item);
+    case " ":
+      if (wxmlTag) {
+        return searchWxmlTagAttribute(wxmlTag);
+      }
+    default:
+      if (inputCharacter >= "a" && inputCharacter <= "z") {
+        if (!wxmlTag) {
+          return searchWxmlTagName(inputCharacter);
         }
-      });
-      return wxmlCompletionItems.map((item: Snippet) => {
-        let wxmlCompletionItem = new CompletionItem(
-          item.label,
-          CompletionItemKind.Field
-        );
-        wxmlCompletionItem.insertText = item.insertText;
-        wxmlCompletionItem.documentation = item.documentation;
-        return wxmlCompletionItem;
-      });
+        return [...searchWxmlTagAttribute(wxmlTag), ...searchBindingEvents()];
+      }
+      return [] as any;
   }
 }
 
