@@ -16,19 +16,6 @@
 		"onLanguage:html",
 		"onLanguage:wxml"
 	],
-	"languages": [
-		{
-			"id": "html",
-			"extensions": [
-				".html",
-				".wxml"
-			],
-			"aliases": [
-				"Html",
-				"Wxml"
-			]
-		}
-	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
@@ -93,7 +80,14 @@
 				"language": "javascript",
 				"path": "./snippets/javascript.json"
 			}
-		]
+		],
+		"languages": [
+      {
+        "id": "wxml",
+				"extensions": [".wxml"],
+				"aliases": ["Wxml"]
+      }
+    ]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

@@ -7,6 +7,7 @@ import completionMiniComponent from "./plugin/autoCompletion/miniComponent";
 import hover from "./hover";
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log("mini-helper 启动了");
   helloword(context);
   jump(context);
   completionMiniApi(context);

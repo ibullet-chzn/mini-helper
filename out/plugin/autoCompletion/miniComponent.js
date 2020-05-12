@@ -34,18 +34,29 @@ function provideCompletionItems(document, position, token, context) {
     switch (inputCharacter) {
         case ":":
             if (wxmlTag) {
-                return wxmlHelper_1.searchBubblingEvents(wxmlTag);
+                return [
+                    ...wxmlHelper_1.searchWxmlAttributes(wxmlTag),
+                    ...wxmlHelper_1.searchBubblingEvents(wxmlTag),
+                ];
             }
         case " ":
             if (wxmlTag) {
-                return wxmlHelper_1.searchWxmlTagAttribute(wxmlTag);
+                return [
+                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
+                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
+                    ...wxmlHelper_1.searchBindingEvents(),
+                ];
             }
         default:
             if (inputCharacter >= "a" && inputCharacter <= "z") {
                 if (!wxmlTag) {
                     return wxmlHelper_1.searchWxmlTagName(inputCharacter);
                 }
-                return [...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag), ...wxmlHelper_1.searchBindingEvents()];
+                return [
+                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
+                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
+                    ...wxmlHelper_1.searchBindingEvents(),
+                ];
             }
             return [];
     }

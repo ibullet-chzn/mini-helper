@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
 const commond_1 = require("../vs/commond");
 const regular_1 = require("../lib/regular");
-const event_1 = require("../mini/event");
 const component_1 = require("../mini/component");
 /**
  * 参考 https://github.com/wx-minapp/minapp-vscode/tree/master/src/plugin/getTagAtPosition
  */
 /**
  * 解析'光标'所属的标签的起止位置
+ * 解析其他可能需要的属性
  */
 exports.getBracketRange = (doc, pos) => {
     const text = doc.getText();
@@ -36,7 +36,12 @@ exports.getBracketRange = (doc, pos) => {
     if (nextStart > 0 && nextStart < endBracket) {
         endBracket = nextStart;
     }
-    return [startBracket, endBracket - startBracket];
+    return {
+        start: startBracket,
+        end: endBracket,
+        length: endBracket - startBracket,
+        tagOffset: offset - startBracket,
+    };
 };
 /**
  * 生成指定字符的替换函数
@@ -50,7 +55,7 @@ exports.getWxmlTag = (doc, pos) => {
     if (!range) {
         return null;
     }
-    const [start, length] = range;
+    const { start, length, tagOffset } = range;
     const text = doc.getText();
     // 因为双大括号里可能会有任何字符，估优先处理
     // 用特殊字符替换 "{{" 与 "}}"" 之间的语句，并保证字符数一致
@@ -71,8 +76,20 @@ exports.getWxmlTag = (doc, pos) => {
         // 轮训找到所有的属性 [0]完整内容 [1]属性名 [2]= [3]"属性值"
         attribute.push(result);
     }
-    const inputWordRange = doc.getWordRangeAtPosition(pos, /\b[\w-:.]+\b/);
-    const input = inputWordRange ? doc.getText(inputWordRange) : ""; // 正在输入的词
+    /**
+     * 处理正在输入的词
+     * 1 利用vs code提供的api
+     * 2 解析光标前的单词(以空格分割)
+     */
+    const vsInputWord = doc.getWordRangeAtPosition(pos, /\b[\w-:.]+\b/);
+    const regInputWord = tagText
+        .substr(0, tagOffset)
+        .match(new RegExp(regular_1.REGEXP_TAG_ATTR_INPUT));
+    const input = vsInputWord
+        ? doc.getText(vsInputWord)
+        : regInputWord
+            ? regInputWord[0]
+            : "";
     return {
         name,
         attribute,
@@ -136,7 +153,7 @@ exports.searchWxmlTagAttribute = (wxmlTag) => {
  * 事件绑定
  */
 exports.searchBindingEvents = () => {
-    return event_1.BindingEvents.map((item) => {
+    return component_1.BindingEvents.map((item) => {
         let wxmlBindingEvent = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
         wxmlBindingEvent.command = commond_1.triggerSuggest;
         return wxmlBindingEvent;
@@ -144,18 +161,55 @@ exports.searchBindingEvents = () => {
 };
 /**
  * 冒泡事件
+ * todo: 区别微信内置属性 并去重
  */
 exports.searchBubblingEvents = (wxmlTag) => {
     console.log(wxmlTag);
     let wxmlBubblingEventsItems = [];
-    event_1.BubblingEvents.forEach((item) => {
-        console.log(item);
+    component_1.BubblingEvents.forEach((item) => {
         wxmlBubblingEventsItems.push(item);
     });
     return wxmlBubblingEventsItems.map((item) => {
         let wxmlBubblingEventsItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
         wxmlBubblingEventsItem.insertText = item.insertText;
         return wxmlBubblingEventsItem;
+    });
+};
+/**
+ * 通用属性
+ */
+exports.searchCommonAttributes = (wxmlTag) => {
+    console.log(wxmlTag);
+    let commonAttributesItems = [];
+    component_1.Attributes.forEach((item) => {
+        commonAttributesItems.push(item);
+    });
+    return commonAttributesItems.map((item) => {
+        let commonAttributesItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        commonAttributesItem.command = commond_1.triggerSuggest;
+        // commonAttributesItem.insertText = item.insertText;
+        return commonAttributesItem;
+    });
+};
+/**
+ * wxml属性
+ * todo: 区别绑定事件 并去重
+ */
+exports.searchWxmlAttributes = (wxmlTag) => {
+    console.log(wxmlTag);
+    let wxmlAttributesItems = [];
+    // wxml属性
+    component_1.WxAttributes.forEach((item) => {
+        wxmlAttributesItems.push(item);
+    });
+    // wx:for 相关属性
+    component_1.WxForAttributes.forEach((item) => {
+        wxmlAttributesItems.push(item);
+    });
+    return wxmlAttributesItems.map((item) => {
+        let wxmlAttributesItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        // wxmlAttributesItem.insertText = item.insertText;
+        return wxmlAttributesItem;
     });
 };
 //# sourceMappingURL=wxmlHelper.js.map

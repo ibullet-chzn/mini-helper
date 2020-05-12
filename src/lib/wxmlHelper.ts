@@ -4,17 +4,28 @@ import {
   CompletionItem,
   CompletionItemKind,
 } from "vscode";
+import { MiniHelper } from "./lib";
 import { triggerSuggest } from "../vs/commond";
 import { Mini } from "../mini/mini";
-import { MiniHelper } from "./miniHelper";
-import { REGEXP_TAG_NAME, REGEXP_TAG_ATTR } from "../lib/regular";
+import {
+  REGEXP_TAG_NAME,
+  REGEXP_TAG_ATTR,
+  REGEXP_TAG_ATTR_INPUT,
+} from "../lib/regular";
 import {
   BindingEvents,
   BindingEvent,
   BubblingEvents,
   BubblingEvent,
-} from "../mini/event";
-import { WxmlSnippets, WxmlSnippet } from "../mini/component";
+  Attributes,
+  Attribute,
+  WxAttributes,
+  WxAttribute,
+  WxForAttributes,
+  WxForAttribute,
+  WxmlSnippets,
+  WxmlSnippet,
+} from "../mini/component";
 
 /**
  * 参考 https://github.com/wx-minapp/minapp-vscode/tree/master/src/plugin/getTagAtPosition
@@ -22,11 +33,9 @@ import { WxmlSnippets, WxmlSnippet } from "../mini/component";
 
 /**
  * 解析'光标'所属的标签的起止位置
+ * 解析其他可能需要的属性
  */
-export const getBracketRange = (
-  doc: TextDocument,
-  pos: Position
-): [number, number] | null => {
+export const getBracketRange = (doc: TextDocument, pos: Position) => {
   const text = doc.getText();
   const offset = doc.offsetAt(pos);
   const textBeforePos = text.substr(0, offset);
@@ -52,7 +61,12 @@ export const getBracketRange = (
   if (nextStart > 0 && nextStart < endBracket) {
     endBracket = nextStart;
   }
-  return [startBracket, endBracket - startBracket];
+  return {
+    start: startBracket,
+    end: endBracket,
+    length: endBracket - startBracket,
+    tagOffset: offset - startBracket,
+  };
 };
 
 /**
@@ -72,7 +86,7 @@ export const getWxmlTag = (
   if (!range) {
     return null;
   }
-  const [start, length] = range;
+  const { start, length, tagOffset } = range;
   const text = doc.getText();
 
   // 因为双大括号里可能会有任何字符，估优先处理
@@ -96,8 +110,21 @@ export const getWxmlTag = (
     attribute.push(result);
   }
 
-  const inputWordRange = doc.getWordRangeAtPosition(pos, /\b[\w-:.]+\b/);
-  const input = inputWordRange ? doc.getText(inputWordRange) : ""; // 正在输入的词
+  /**
+   * 处理正在输入的词
+   * 1 利用vs code提供的api
+   * 2 解析光标前的单词(以空格分割)
+   */
+  const vsInputWord = doc.getWordRangeAtPosition(pos, /\b[\w-:.]+\b/);
+  const regInputWord = tagText
+    .substr(0, tagOffset)
+    .match(new RegExp(REGEXP_TAG_ATTR_INPUT));
+  const input = vsInputWord
+    ? doc.getText(vsInputWord)
+    : regInputWord
+    ? regInputWord[0]
+    : "";
+
   return {
     name,
     attribute,
@@ -180,12 +207,12 @@ export const searchBindingEvents = () => {
 
 /**
  * 冒泡事件
+ * todo: 区别微信内置属性 并去重
  */
 export const searchBubblingEvents = (wxmlTag: MiniHelper.WxmlTag) => {
   console.log(wxmlTag);
   let wxmlBubblingEventsItems: BubblingEvent[] = [];
   BubblingEvents.forEach((item: BubblingEvent) => {
-    console.log(item);
     wxmlBubblingEventsItems.push(item);
   });
   return wxmlBubblingEventsItems.map((item: BubblingEvent) => {
@@ -195,5 +222,50 @@ export const searchBubblingEvents = (wxmlTag: MiniHelper.WxmlTag) => {
     );
     wxmlBubblingEventsItem.insertText = item.insertText;
     return wxmlBubblingEventsItem;
+  });
+};
+
+/**
+ * 通用属性
+ */
+export const searchCommonAttributes = (wxmlTag: MiniHelper.WxmlTag) => {
+  console.log(wxmlTag);
+  let commonAttributesItems: Attribute[] = [];
+  Attributes.forEach((item: Attribute) => {
+    commonAttributesItems.push(item);
+  });
+  return commonAttributesItems.map((item: BubblingEvent) => {
+    let commonAttributesItem = new CompletionItem(
+      item.label,
+      CompletionItemKind.Field
+    );
+    commonAttributesItem.command = triggerSuggest;
+    // commonAttributesItem.insertText = item.insertText;
+    return commonAttributesItem;
+  });
+};
+
+/**
+ * wxml属性
+ * todo: 区别绑定事件 并去重
+ */
+export const searchWxmlAttributes = (wxmlTag: MiniHelper.WxmlTag) => {
+  console.log(wxmlTag);
+  let wxmlAttributesItems: WxAttribute[] = [];
+  // wxml属性
+  WxAttributes.forEach((item: WxAttribute) => {
+    wxmlAttributesItems.push(item);
+  });
+  // wx:for 相关属性
+  WxForAttributes.forEach((item: WxForAttribute) => {
+    wxmlAttributesItems.push(item);
+  });
+  return wxmlAttributesItems.map((item: BubblingEvent) => {
+    let wxmlAttributesItem = new CompletionItem(
+      item.label,
+      CompletionItemKind.Field
+    );
+    // wxmlAttributesItem.insertText = item.insertText;
+    return wxmlAttributesItem;
   });
 };

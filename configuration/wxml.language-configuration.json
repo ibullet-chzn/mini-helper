@@ -1,0 +1,40 @@
+{
+  // 注释规则
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["<!--", "-->"]
+  },
+  // 括号定义
+  "brackets": [
+    ["<!--", "-->"],
+    ["<", ">"],
+    ["{{", "}}"],
+    ["(", ")"]
+  ],
+  // 自动闭合
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "`", "close": "`", "notIn": ["string", "comment"] },
+    { "open": "/**", "close": " */", "notIn": ["string"] }
+  ],
+  // 自动环绕
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["'", "'"],
+    ["\"", "\""],
+    ["`", "`"]
+  ],
+  // 折叠匹配
+  "folding": {
+    "markers": {
+      "start": "^\\s*//\\s*#?region\\b",
+      "end": "^\\s*//\\s*#?endregion\\b"
+    }
+  }
+}

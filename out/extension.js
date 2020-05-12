@@ -6,6 +6,7 @@ const miniApi_1 = require("./plugin/autoCompletion/miniApi");
 const miniComponent_1 = require("./plugin/autoCompletion/miniComponent");
 const hover_1 = require("./hover");
 function activate(context) {
+    console.log("mini-helper 启动了");
     helloworld_1.default(context);
     jump_1.default(context);
     miniApi_1.default(context);

@@ -17,6 +17,8 @@ import {
   searchWxmlTagAttribute,
   searchBindingEvents,
   searchBubblingEvents,
+  searchCommonAttributes,
+  searchWxmlAttributes,
 } from "../../lib/wxmlHelper";
 
 export default function (context: ExtensionContext) {
@@ -62,18 +64,29 @@ function provideCompletionItems(
   switch (inputCharacter) {
     case ":":
       if (wxmlTag) {
-        return searchBubblingEvents(wxmlTag);
+        return [
+          ...searchWxmlAttributes(wxmlTag),
+          ...searchBubblingEvents(wxmlTag),
+        ];
       }
     case " ":
       if (wxmlTag) {
-        return searchWxmlTagAttribute(wxmlTag);
+        return [
+          ...searchCommonAttributes(wxmlTag),
+          ...searchWxmlTagAttribute(wxmlTag),
+          ...searchBindingEvents(),
+        ];
       }
     default:
       if (inputCharacter >= "a" && inputCharacter <= "z") {
         if (!wxmlTag) {
           return searchWxmlTagName(inputCharacter);
         }
-        return [...searchWxmlTagAttribute(wxmlTag), ...searchBindingEvents()];
+        return [
+          ...searchCommonAttributes(wxmlTag),
+          ...searchWxmlTagAttribute(wxmlTag),
+          ...searchBindingEvents(),
+        ];
       }
       return [] as any;
   }
