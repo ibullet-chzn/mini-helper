@@ -1,0 +1,92 @@
+{
+  "name": "WXML",
+  "scopeName": "text.html.wxml",
+  "repository": {
+    "tag-generic-attribute": {
+      "name": "entity.other.attribute-name",
+      "match": "(?<=[^=])\\b([a-zA-Z0-9:-]+)"
+    },
+    "string-double-quoted": {
+      "name": "string.quoted.double",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#wxml-interpolations"
+        }
+      ]
+    },
+    "string-single-quoted": {
+      "name": "string.quoted.single",
+      "contentName": "support.function",
+      "begin": "'",
+      "end": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#wxml-interpolations"
+        }
+      ]
+    },
+    "wxml-interpolations": {
+      "name": "expression.embedded",
+      "begin": "{{",
+      "end": "}}",
+      "beginCaptures": {
+        "0": {
+          "name": "support.constant.handlebars"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "support.constant.handlebars"
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    "wxml-grammar": {
+      "patterns": [
+        {
+          "include": "#tag-generic-attribute"
+        },
+        {
+          "include": "#string-double-quoted"
+        },
+        {
+          "include": "#string-single-quoted"
+        },
+        {
+          "include": "#wxml-interpolations"
+        }
+      ]
+    }
+  },
+  "patterns": [
+    {
+      "include": "#wxml-grammar"
+    }
+  ]
+}

@@ -34,7 +34,10 @@
 				"miniHelper.helper.position": {
 					"type": "string",
 					"default": "right",
-					"enum": ["left", "right"],
+					"enum": [
+						"left",
+						"right"
+					],
 					"enumDescriptions": [
 						"left descriptions",
 						"right descriptions"
@@ -46,7 +49,10 @@
 					"description": "miniHelper text."
 				},
 				"miniHelper.helper.canNull": {
-					"type": ["string", "null"],
+					"type": [
+						"string",
+						"null"
+					],
 					"default": null,
 					"description": "miniHelper canNull."
 				}
@@ -82,12 +88,25 @@
 			}
 		],
 		"languages": [
-      {
-        "id": "wxml",
-				"extensions": [".wxml"],
-				"aliases": ["Wxml"]
-      }
-    ]
+			{
+				"id": "wxml",
+				"extensions": [
+					".wxml"
+				],
+				"configuration": "./syntaxes/wxml.language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "wxml",
+				"scopeName": "text.html.wxml",
+				"path": "./syntaxes/wxml.tmLanguage.json",
+				"embeddedLanguages": {
+					"text.html": "html",
+					"source.js": "js"
+				}
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
@@ -95,7 +114,8 @@
 		"lint": "eslint src --ext ts",
 		"watch": "tsc -watch -p ./",
 		"pretest": "yarn run compile && yarn run lint",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/runTest.js",
+		"yaml": "npx js-yaml syntaxes/wxml.tmLanguage.yaml > syntaxes/wxml.tmLanguage.json & npx js-yaml syntaxes/wxml.language-configuration.yaml > syntaxes/wxml.language-configuration.json"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
@@ -107,6 +127,7 @@
 		"eslint": "^6.8.0",
 		"eslint-plugin-prettier": "^3.1.2",
 		"glob": "^7.1.6",
+		"js-yaml": "^3.13.1",
 		"mocha": "^7.0.1",
 		"prettier": "^2.0.2",
 		"typescript": "^3.7.5",

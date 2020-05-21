@@ -1,0 +1,64 @@
+comments: # 注释规则
+  blockComment: # 块注释
+    - <!--
+    - -->
+brackets: # 括号定义
+  - 
+    - <!--
+    - -->
+  -
+    - '<'
+    - '>'
+  -
+    - '{{'
+    - '}}'
+  -
+    - '('
+    - ')'
+autoClosingPairs: # 自动闭合
+  -
+    open: '{'
+    close: '}'
+  -
+    open: '['
+    close: ']'
+  -
+    open: '('
+    close: ')'
+  -
+    open: '"'
+    close: '"'
+    notIn:
+      - string
+  -
+    open: "'"
+    close: "'"
+    notIn:
+      - string
+autoCloseBefore: \"'-_:<>.,=}# \t\n
+surroundingPairs: # 自动环绕
+  -
+    open: '{'
+    close: '}'
+  -
+    open: '{{'
+    close: '}}'
+  -
+    open: '<'
+    close: '>'
+  -
+    open: '('
+    close: ')'
+  -
+    open: '['
+    close: ']'
+  -
+    open: '"'
+    close: '"'
+  -
+    open: "'"
+    close: "'"
+folding: # 折叠匹配
+  markers:
+    start: ^\s*<!--\s*#region\b.*-->
+    end: ^^\s*<!--\s*#endregion\b.*-->
