@@ -20,12 +20,16 @@ import {
   Attributes,
   Attribute,
   WxAttributes,
-  WxAttribute,
   WxForAttributes,
-  WxForAttribute,
   WxmlSnippets,
   WxmlSnippet,
 } from "../mini/component";
+
+/**
+ * 备用数据
+ */
+
+const BindingEventsArray = BindingEvents.map((item) => item.label);
 
 /**
  * 参考 https://github.com/wx-minapp/minapp-vscode/tree/master/src/plugin/getTagAtPosition
@@ -133,14 +137,33 @@ export const getWxmlTag = (
 };
 
 /**
+ * 属性去重复
+ * 兼容 : 的场景
+ */
+export const removeDuplicateAttribute = (
+  wxmlTag: MiniHelper.WxmlTag,
+  attribute: Attribute
+): Attribute | boolean => {
+  if (
+    wxmlTag.attribute
+      .map((item) => {
+        const colonIndex = item[1].indexOf(":");
+        return colonIndex !== -1 ? item[1].substring(colonIndex + 1) : item[1];
+      })
+      .indexOf(attribute.label) === -1
+  ) {
+    return attribute;
+  }
+  return false;
+};
+
+/**
  * 匹配标签名
  */
 export const searchWxmlTagName = (inputCharacter: string) => {
   let wxmlCompletionItems: WxmlSnippet[] = [];
   WxmlSnippets.forEach((item: WxmlSnippet) => {
-    if (item.trigger === inputCharacter) {
-      wxmlCompletionItems.push(item);
-    }
+    wxmlCompletionItems.push(item);
   });
   return wxmlCompletionItems.map((item: WxmlSnippet) => {
     let wxmlCompletionItem = new CompletionItem(
@@ -164,14 +187,9 @@ export const searchWxmlTagAttribute = (wxmlTag: MiniHelper.WxmlTag) => {
       // 已有属性-匹配
       if (wxmlTag.attribute.length > 0) {
         item.attribute?.forEach((attribute) => {
-          let matchResult = true;
-          wxmlTag.attribute.forEach((RegExpAttribute) => {
-            if (RegExpAttribute[1] === attribute.label) {
-              matchResult = false;
-            }
-          });
-          if (matchResult) {
-            wxmlAttributesItems?.push(attribute);
+          const IAttribute = removeDuplicateAttribute(wxmlTag, attribute);
+          if (attribute) {
+            wxmlAttributesItems?.push(IAttribute as Attribute);
           }
         });
       } else {
@@ -211,9 +229,15 @@ export const searchBindingEvents = () => {
  */
 export const searchBubblingEvents = (wxmlTag: MiniHelper.WxmlTag) => {
   console.log(wxmlTag);
+  if (BindingEventsArray.indexOf(wxmlTag.input) === -1) {
+    return [];
+  }
   let wxmlBubblingEventsItems: BubblingEvent[] = [];
   BubblingEvents.forEach((item: BubblingEvent) => {
-    wxmlBubblingEventsItems.push(item);
+    const attribute = removeDuplicateAttribute(wxmlTag, item);
+    if (attribute) {
+      wxmlBubblingEventsItems.push(attribute as Attribute);
+    }
   });
   return wxmlBubblingEventsItems.map((item: BubblingEvent) => {
     let wxmlBubblingEventsItem = new CompletionItem(
@@ -229,43 +253,57 @@ export const searchBubblingEvents = (wxmlTag: MiniHelper.WxmlTag) => {
  * 通用属性
  */
 export const searchCommonAttributes = (wxmlTag: MiniHelper.WxmlTag) => {
-  console.log(wxmlTag);
   let commonAttributesItems: Attribute[] = [];
   Attributes.forEach((item: Attribute) => {
-    commonAttributesItems.push(item);
+    const attribute = removeDuplicateAttribute(wxmlTag, item);
+    if (attribute) {
+      commonAttributesItems.push(attribute as Attribute);
+    }
   });
-  return commonAttributesItems.map((item: BubblingEvent) => {
+  return commonAttributesItems.map((item: Attribute) => {
     let commonAttributesItem = new CompletionItem(
       item.label,
       CompletionItemKind.Field
     );
-    commonAttributesItem.command = triggerSuggest;
-    // commonAttributesItem.insertText = item.insertText;
+    if (item.command) {
+      commonAttributesItem.command = item.command;
+    }
+    commonAttributesItem.insertText = item.insertText;
     return commonAttributesItem;
   });
 };
 
 /**
  * wxml属性
- * todo: 区别绑定事件 并去重
+ * todo: 区别绑定事件
  */
 export const searchWxmlAttributes = (wxmlTag: MiniHelper.WxmlTag) => {
-  console.log(wxmlTag);
-  let wxmlAttributesItems: WxAttribute[] = [];
+  if (wxmlTag.input !== "wx:") {
+    return [];
+  }
+  let wxmlAttributesItems: Attribute[] = [];
   // wxml属性
-  WxAttributes.forEach((item: WxAttribute) => {
-    wxmlAttributesItems.push(item);
+  WxAttributes.forEach((item: Attribute) => {
+    const attribute = removeDuplicateAttribute(wxmlTag, item);
+    if (attribute) {
+      wxmlAttributesItems.push(attribute as Attribute);
+    }
   });
   // wx:for 相关属性
-  WxForAttributes.forEach((item: WxForAttribute) => {
-    wxmlAttributesItems.push(item);
-  });
+  if (wxmlTag.attribute.map((item) => item[1]).indexOf("wx:for") !== -1) {
+    WxForAttributes.forEach((item: Attribute) => {
+      const attribute = removeDuplicateAttribute(wxmlTag, item);
+      if (attribute) {
+        wxmlAttributesItems.push(attribute as Attribute);
+      }
+    });
+  }
   return wxmlAttributesItems.map((item: BubblingEvent) => {
     let wxmlAttributesItem = new CompletionItem(
       item.label,
       CompletionItemKind.Field
     );
-    // wxmlAttributesItem.insertText = item.insertText;
+    wxmlAttributesItem.insertText = item.insertText;
     return wxmlAttributesItem;
   });
 };

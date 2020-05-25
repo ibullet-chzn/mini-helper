@@ -5,6 +5,10 @@ const commond_1 = require("../vs/commond");
 const regular_1 = require("../lib/regular");
 const component_1 = require("../mini/component");
 /**
+ * 备用数据
+ */
+const BindingEventsArray = component_1.BindingEvents.map((item) => item.label);
+/**
  * 参考 https://github.com/wx-minapp/minapp-vscode/tree/master/src/plugin/getTagAtPosition
  */
 /**
@@ -97,14 +101,27 @@ exports.getWxmlTag = (doc, pos) => {
     };
 };
 /**
+ * 属性去重复
+ * 兼容 : 的场景
+ */
+exports.removeDuplicateAttribute = (wxmlTag, attribute) => {
+    if (wxmlTag.attribute
+        .map((item) => {
+        const colonIndex = item[1].indexOf(":");
+        return colonIndex !== -1 ? item[1].substring(colonIndex + 1) : item[1];
+    })
+        .indexOf(attribute.label) === -1) {
+        return attribute;
+    }
+    return false;
+};
+/**
  * 匹配标签名
  */
 exports.searchWxmlTagName = (inputCharacter) => {
     let wxmlCompletionItems = [];
     component_1.WxmlSnippets.forEach((item) => {
-        if (item.trigger === inputCharacter) {
-            wxmlCompletionItems.push(item);
-        }
+        wxmlCompletionItems.push(item);
     });
     return wxmlCompletionItems.map((item) => {
         let wxmlCompletionItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
@@ -125,14 +142,9 @@ exports.searchWxmlTagAttribute = (wxmlTag) => {
             // 已有属性-匹配
             if (wxmlTag.attribute.length > 0) {
                 (_a = item.attribute) === null || _a === void 0 ? void 0 : _a.forEach((attribute) => {
-                    let matchResult = true;
-                    wxmlTag.attribute.forEach((RegExpAttribute) => {
-                        if (RegExpAttribute[1] === attribute.label) {
-                            matchResult = false;
-                        }
-                    });
-                    if (matchResult) {
-                        wxmlAttributesItems === null || wxmlAttributesItems === void 0 ? void 0 : wxmlAttributesItems.push(attribute);
+                    const IAttribute = exports.removeDuplicateAttribute(wxmlTag, attribute);
+                    if (attribute) {
+                        wxmlAttributesItems === null || wxmlAttributesItems === void 0 ? void 0 : wxmlAttributesItems.push(IAttribute);
                     }
                 });
             }
@@ -165,9 +177,15 @@ exports.searchBindingEvents = () => {
  */
 exports.searchBubblingEvents = (wxmlTag) => {
     console.log(wxmlTag);
+    if (BindingEventsArray.indexOf(wxmlTag.input) === -1) {
+        return [];
+    }
     let wxmlBubblingEventsItems = [];
     component_1.BubblingEvents.forEach((item) => {
-        wxmlBubblingEventsItems.push(item);
+        const attribute = exports.removeDuplicateAttribute(wxmlTag, item);
+        if (attribute) {
+            wxmlBubblingEventsItems.push(attribute);
+        }
     });
     return wxmlBubblingEventsItems.map((item) => {
         let wxmlBubblingEventsItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
@@ -179,36 +197,50 @@ exports.searchBubblingEvents = (wxmlTag) => {
  * 通用属性
  */
 exports.searchCommonAttributes = (wxmlTag) => {
-    console.log(wxmlTag);
     let commonAttributesItems = [];
     component_1.Attributes.forEach((item) => {
-        commonAttributesItems.push(item);
+        const attribute = exports.removeDuplicateAttribute(wxmlTag, item);
+        if (attribute) {
+            commonAttributesItems.push(attribute);
+        }
     });
     return commonAttributesItems.map((item) => {
         let commonAttributesItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
-        commonAttributesItem.command = commond_1.triggerSuggest;
-        // commonAttributesItem.insertText = item.insertText;
+        if (item.command) {
+            commonAttributesItem.command = item.command;
+        }
+        commonAttributesItem.insertText = item.insertText;
         return commonAttributesItem;
     });
 };
 /**
  * wxml属性
- * todo: 区别绑定事件 并去重
+ * todo: 区别绑定事件
  */
 exports.searchWxmlAttributes = (wxmlTag) => {
-    console.log(wxmlTag);
+    if (wxmlTag.input !== "wx:") {
+        return [];
+    }
     let wxmlAttributesItems = [];
     // wxml属性
     component_1.WxAttributes.forEach((item) => {
-        wxmlAttributesItems.push(item);
+        const attribute = exports.removeDuplicateAttribute(wxmlTag, item);
+        if (attribute) {
+            wxmlAttributesItems.push(attribute);
+        }
     });
     // wx:for 相关属性
-    component_1.WxForAttributes.forEach((item) => {
-        wxmlAttributesItems.push(item);
-    });
+    if (wxmlTag.attribute.map((item) => item[1]).indexOf("wx:for") !== -1) {
+        component_1.WxForAttributes.forEach((item) => {
+            const attribute = exports.removeDuplicateAttribute(wxmlTag, item);
+            if (attribute) {
+                wxmlAttributesItems.push(attribute);
+            }
+        });
+    }
     return wxmlAttributesItems.map((item) => {
         let wxmlAttributesItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
-        // wxmlAttributesItem.insertText = item.insertText;
+        wxmlAttributesItem.insertText = item.insertText;
         return wxmlAttributesItem;
     });
 };

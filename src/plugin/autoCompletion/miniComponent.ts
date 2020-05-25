@@ -23,7 +23,6 @@ import {
 
 export default function (context: ExtensionContext) {
   // 根据微信文档 获取需要自动提示的字符
-  let wxmlTrigger = WxmlSnippets.map((item: WxmlSnippet) => item.trigger);
   let disposable = languages.registerCompletionItemProvider(
     "wxml",
     {
@@ -32,8 +31,7 @@ export default function (context: ExtensionContext) {
     },
     " ",
     ":",
-    "\n",
-    ...wxmlTrigger
+    "\n"
   );
   context.subscriptions.push(disposable);
 }
