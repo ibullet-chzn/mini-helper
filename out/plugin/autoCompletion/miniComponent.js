@@ -38,6 +38,7 @@ function provideCompletionItems(document, position, token, context) {
                 ];
             }
         case " ":
+        case "\n":
             if (wxmlTag) {
                 return [
                     ...wxmlHelper_1.searchCommonAttributes(wxmlTag),

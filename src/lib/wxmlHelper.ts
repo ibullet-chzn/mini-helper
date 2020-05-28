@@ -170,6 +170,7 @@ export const searchWxmlTagName = (inputCharacter: string) => {
       item.label,
       CompletionItemKind.Field
     );
+    wxmlCompletionItem.command = triggerSuggest;
     wxmlCompletionItem.insertText = item.insertText;
     wxmlCompletionItem.documentation = item.documentation;
     return wxmlCompletionItem;

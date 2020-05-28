@@ -125,6 +125,7 @@ exports.searchWxmlTagName = (inputCharacter) => {
     });
     return wxmlCompletionItems.map((item) => {
         let wxmlCompletionItem = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
+        wxmlCompletionItem.command = commond_1.triggerSuggest;
         wxmlCompletionItem.insertText = item.insertText;
         wxmlCompletionItem.documentation = item.documentation;
         return wxmlCompletionItem;

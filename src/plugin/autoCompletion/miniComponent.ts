@@ -6,10 +6,8 @@ import {
   CancellationToken,
   CompletionContext,
   CompletionItem,
-  CompletionItemKind,
 } from "vscode";
 
-import { WxmlSnippets, WxmlSnippet } from "../../mini/component";
 import { getLastChar } from "../../lib/helper";
 import {
   getWxmlTag,
@@ -68,6 +66,7 @@ function provideCompletionItems(
         ];
       }
     case " ":
+    case "\n":
       if (wxmlTag) {
         return [
           ...searchCommonAttributes(wxmlTag),

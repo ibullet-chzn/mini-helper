@@ -212,6 +212,20 @@ export const WxmlSnippets: WxmlSnippet[] = [
     documentation: new MarkdownString("### 视图容器"),
   },
   {
-    label: "",
+    label: "cover-view",
+    attribute: [
+      {
+        label: "scroll-top",
+        type: "number/string",
+        default: "",
+        required: false,
+        version: "2.1.0",
+        documentation:
+          "设置顶部滚动偏移量，仅在设置了 overflow-y: scroll 成为滚动元素后生效",
+        insertText: new SnippetString('scroll-top="$0"'),
+      },
+    ],
+    insertText: new SnippetString("<cover-view $1>$0</cover-view>"),
+    documentation: new MarkdownString("### 覆盖在原生组件之上的文本视图"),
   },
 ];
