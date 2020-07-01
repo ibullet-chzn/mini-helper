@@ -9,15 +9,7 @@ import {
 } from "vscode";
 
 import { getLastChar } from "../../lib/helper";
-import {
-  getWxmlTag,
-  searchWxmlTagName,
-  searchWxmlTagAttribute,
-  searchBindingEvents,
-  searchBubblingEvents,
-  searchCommonAttributes,
-  searchWxmlAttributes,
-} from "../../lib/wxmlHelper";
+import { getWxmlTag } from "../../lib/wxmlHelper";
 
 export default function (context: ExtensionContext) {
   // 根据微信文档 获取需要自动提示的字符
@@ -28,7 +20,6 @@ export default function (context: ExtensionContext) {
       resolveCompletionItem,
     },
     " ",
-    ":",
     "\n"
   );
   context.subscriptions.push(disposable);
@@ -56,38 +47,21 @@ function provideCompletionItems(
     context.triggerCharacter || getLastChar(document, position);
   // 解析用户输入的标签内容
   const wxmlTag = getWxmlTag(document, position);
-  switch (inputCharacter) {
-    case ":":
-      if (wxmlTag) {
-        return [
-          ...searchWxmlAttributes(wxmlTag),
-          ...searchBubblingEvents(wxmlTag),
-        ];
+  if (wxmlTag) {
+    const { onAttrValue, attrName } = wxmlTag;
+    if (onAttrValue && attrName === "class") {
+      if (
+        inputCharacter === " " ||
+        (inputCharacter >= "a" && inputCharacter <= "z") ||
+        (inputCharacter >= "A" && inputCharacter <= "Z")
+      ) {
+        console.log("搜索");
+        return [] as any;
       }
-    case " ":
-    case "\n":
-      if (wxmlTag) {
-        return [
-          ...searchCommonAttributes(wxmlTag),
-          ...searchWxmlTagAttribute(wxmlTag),
-          ...searchBindingEvents(),
-        ];
-      }
-    default:
-      if (inputCharacter >= "a" && inputCharacter <= "z") {
-        if (!wxmlTag) {
-          return searchWxmlTagName(inputCharacter);
-        }
-        return [
-          ...searchCommonAttributes(wxmlTag),
-          ...searchWxmlTagAttribute(wxmlTag),
-          ...searchBindingEvents(),
-        ];
-      }
-      return [] as any;
+    }
   }
+  return [] as any;
 }
-
 /**
  * 光标选中当前自动补全item时触发动作，一般情况下无需处理
  * @param {*} item

@@ -4,6 +4,7 @@ const helloworld_1 = require("./helloworld");
 const jump_1 = require("./jump");
 const miniApi_1 = require("./plugin/autoCompletion/miniApi");
 const miniComponent_1 = require("./plugin/autoCompletion/miniComponent");
+const miniWxss_1 = require("./plugin/autoCompletion/miniWxss");
 const hover_1 = require("./hover");
 function activate(context) {
     console.log("mini-helper 启动了");
@@ -11,6 +12,7 @@ function activate(context) {
     jump_1.default(context);
     miniApi_1.default(context);
     miniComponent_1.default(context);
+    miniWxss_1.default(context);
     hover_1.default(context);
 }
 exports.activate = activate;

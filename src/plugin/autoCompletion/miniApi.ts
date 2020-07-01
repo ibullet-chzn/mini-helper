@@ -1,10 +1,17 @@
 import * as vscode from "vscode";
+import { getLastChar } from "../../lib/helper";
 import { getProjectPath } from "../../utils";
+
+import {
+  getWxInput,
+  searchBuiltInFunctions,
+  searchWxApis,
+} from "../../lib/apiHelper";
 
 export default function (context: vscode.ExtensionContext) {
   // 注册代码建议提示，只有当按下“.”时才触发
   let disposable = vscode.languages.registerCompletionItemProvider(
-    "javascript",
+    ["javascript", "typescript"],
     {
       provideCompletionItems,
       resolveCompletionItem,
@@ -29,23 +36,27 @@ function provideCompletionItems(
   token: vscode.CancellationToken,
   context: vscode.CompletionContext
 ) {
-  console.log(document.getText());
-  const line = document.lineAt(position);
-  const projectPath = getProjectPath(document);
+  // token表示由于用户继续输入而取消当前事件
+  if (token.isCancellationRequested) {
+    return Promise.resolve([]);
+  }
+  // 用户输入的最后一个字符
+  let inputCharacter =
+    context.triggerCharacter || getLastChar(document, position);
+  console.log(inputCharacter);
 
-  // 只截取到光标位置为止，防止一些特殊情况
-  const lineText = line.text.substring(0, position.character);
-  // 简单匹配，只要当前光标前的字符串为`this.dependencies.`都自动带出所有的依赖
-  if (/(^|=| )\w+\.dependencies\.$/g.test(lineText)) {
-    const json = require(`${projectPath}/package.json`);
-    const dependencies = Object.keys(json.dependencies || {}).concat(
-      Object.keys(json.devDependencies || {})
-    );
+  const wxInput = getWxInput(document, position);
 
-    return dependencies.map((dep) => {
-      // vscode.CompletionItemKind 表示提示的类型
-      return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
-    });
+  switch (inputCharacter) {
+    case ".":
+      return [...searchWxApis(wxInput)];
+    default:
+      if (inputCharacter >= "a" && inputCharacter <= "z") {
+        return [...searchBuiltInFunctions()];
+      } else if (inputCharacter >= "A" && inputCharacter <= "Z") {
+        return [...searchBuiltInFunctions()];
+      }
+      return [] as any;
   }
 }
 

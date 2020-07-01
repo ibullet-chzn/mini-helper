@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const utils_1 = require("../../utils");
+const helper_1 = require("../../lib/helper");
+const apiHelper_1 = require("../../lib/apiHelper");
 function default_1(context) {
     // 注册代码建议提示，只有当按下“.”时才触发
-    let disposable = vscode.languages.registerCompletionItemProvider("javascript", {
+    let disposable = vscode.languages.registerCompletionItemProvider(["javascript", "typescript"], {
         provideCompletionItems,
         resolveCompletionItem,
     }, ".");
@@ -21,19 +22,25 @@ exports.default = default_1;
  * @param {*} context
  */
 function provideCompletionItems(document, position, token, context) {
-    console.log(document.getText());
-    const line = document.lineAt(position);
-    const projectPath = utils_1.getProjectPath(document);
-    // 只截取到光标位置为止，防止一些特殊情况
-    const lineText = line.text.substring(0, position.character);
-    // 简单匹配，只要当前光标前的字符串为`this.dependencies.`都自动带出所有的依赖
-    if (/(^|=| )\w+\.dependencies\.$/g.test(lineText)) {
-        const json = require(`${projectPath}/package.json`);
-        const dependencies = Object.keys(json.dependencies || {}).concat(Object.keys(json.devDependencies || {}));
-        return dependencies.map((dep) => {
-            // vscode.CompletionItemKind 表示提示的类型
-            return new vscode.CompletionItem(dep, vscode.CompletionItemKind.Field);
-        });
+    // token表示由于用户继续输入而取消当前事件
+    if (token.isCancellationRequested) {
+        return Promise.resolve([]);
+    }
+    // 用户输入的最后一个字符
+    let inputCharacter = context.triggerCharacter || helper_1.getLastChar(document, position);
+    console.log(inputCharacter);
+    const wxInput = apiHelper_1.getWxInput(document, position);
+    switch (inputCharacter) {
+        case ".":
+            return [...apiHelper_1.searchWxApis(wxInput)];
+        default:
+            if (inputCharacter >= "a" && inputCharacter <= "z") {
+                return [...apiHelper_1.searchBuiltInFunctions()];
+            }
+            else if (inputCharacter >= "A" && inputCharacter <= "Z") {
+                return [...apiHelper_1.searchBuiltInFunctions()];
+            }
+            return [];
     }
 }
 /**

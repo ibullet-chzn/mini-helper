@@ -12,4 +12,8 @@ exports.REGEXP_TAG_ATTR = /([\w-:.]+)\s*(=\s*("[^"]*"|'[^']*'))?\s*/;
  * 匹配正在输入的标签属性
  */
 exports.REGEXP_TAG_ATTR_INPUT = /\b[\w-:.]+$/;
+/**
+ * 匹配正在输入的标签名
+ */
+exports.REGEXP_TAG_ATTR_NAME = /\s([\w-:.]+)=%*$/;
 //# sourceMappingURL=regular.js.map

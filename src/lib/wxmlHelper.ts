@@ -11,6 +11,7 @@ import {
   REGEXP_TAG_NAME,
   REGEXP_TAG_ATTR,
   REGEXP_TAG_ATTR_INPUT,
+  REGEXP_TAG_ATTR_NAME,
 } from "../lib/regular";
 import {
   BindingEvents,
@@ -106,6 +107,11 @@ export const getWxmlTag = (
   const name = tagNameMatcher[1]; // 标签名称
   const tagText = text.substr(start, length);
   const attrstr = tagText.substr(tagNameMatcher[0].length); // 属性部分原始字符串
+  const onAttrValue = attrFlagText[tagOffset] === "%";
+  const regAttrName = attrFlagText
+    .substring(0, tagOffset)
+    .match(new RegExp(REGEXP_TAG_ATTR_NAME));
+  const attrName = regAttrName ? regAttrName[1] : ""; // 当前输入对应的属性
   const r = new RegExp(REGEXP_TAG_ATTR, "g");
   let result: RegExpExecArray | null | number = 0;
   let attribute: MiniHelper.Attributes = [];
@@ -133,6 +139,8 @@ export const getWxmlTag = (
     name,
     attribute,
     input,
+    onAttrValue,
+    attrName,
   };
 };
 

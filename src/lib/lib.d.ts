@@ -6,5 +6,11 @@ export namespace MiniHelper {
     name: string;
     attribute: MiniHelper.Attributes;
     input: string;
+    onAttrValue: boolean;
+    attrName: string;
+  }
+
+  export interface WxInput {
+    input: string;
   }
 }

@@ -8,7 +8,7 @@ function default_1(context) {
     let disposable = vscode_1.languages.registerCompletionItemProvider("wxml", {
         provideCompletionItems,
         resolveCompletionItem,
-    }, " ", ":", "\n");
+    }, " ", "\n");
     context.subscriptions.push(disposable);
 }
 exports.default = default_1;
@@ -28,36 +28,18 @@ function provideCompletionItems(document, position, token, context) {
     let inputCharacter = context.triggerCharacter || helper_1.getLastChar(document, position);
     // 解析用户输入的标签内容
     const wxmlTag = wxmlHelper_1.getWxmlTag(document, position);
-    switch (inputCharacter) {
-        case ":":
-            if (wxmlTag) {
-                return [
-                    ...wxmlHelper_1.searchWxmlAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchBubblingEvents(wxmlTag),
-                ];
+    if (wxmlTag) {
+        const { onAttrValue, attrName } = wxmlTag;
+        if (onAttrValue && attrName === "class") {
+            if (inputCharacter === " " ||
+                (inputCharacter >= "a" && inputCharacter <= "z") ||
+                (inputCharacter >= "A" && inputCharacter <= "Z")) {
+                console.log("搜索");
+                return [];
             }
-        case " ":
-        case "\n":
-            if (wxmlTag) {
-                return [
-                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
-                    ...wxmlHelper_1.searchBindingEvents(),
-                ];
-            }
-        default:
-            if (inputCharacter >= "a" && inputCharacter <= "z") {
-                if (!wxmlTag) {
-                    return wxmlHelper_1.searchWxmlTagName(inputCharacter);
-                }
-                return [
-                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
-                    ...wxmlHelper_1.searchBindingEvents(),
-                ];
-            }
-            return [];
+        }
     }
+    return [];
 }
 /**
  * 光标选中当前自动补全item时触发动作，一般情况下无需处理
@@ -67,4 +49,4 @@ function provideCompletionItems(document, position, token, context) {
 function resolveCompletionItem(item, token) {
     return null;
 }
-//# sourceMappingURL=miniComponent.js.map
+//# sourceMappingURL=miniWxss.js.map

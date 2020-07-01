@@ -13,6 +13,7 @@
 		"onCommand:extension.helloWorld",
 		"onLanguage:json",
 		"onLanguage:javascript",
+		"onLanguage:typescript",
 		"onLanguage:html",
 		"onLanguage:wxml"
 	],
