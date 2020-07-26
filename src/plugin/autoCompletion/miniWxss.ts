@@ -1,4 +1,7 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
+  workspace,
   languages,
   ExtensionContext,
   TextDocument,
@@ -6,10 +9,12 @@ import {
   CancellationToken,
   CompletionContext,
   CompletionItem,
+  CompletionItemKind,
 } from "vscode";
 
 import { getLastChar } from "../../lib/helper";
 import { getWxmlTag } from "../../lib/wxmlHelper";
+import { StyleFile, parseStyleFile } from "../../lib/wxssHelper";
 
 export default function (context: ExtensionContext) {
   // 根据微信文档 获取需要自动提示的字符
@@ -55,8 +60,40 @@ function provideCompletionItems(
         (inputCharacter >= "a" && inputCharacter <= "z") ||
         (inputCharacter >= "A" && inputCharacter <= "Z")
       ) {
-        console.log("搜索");
-        return [] as any;
+        let exts = ["wxss"];
+        let dir = path.dirname(document.fileName);
+        let basename = path.basename(
+          document.fileName,
+          path.extname(document.fileName)
+        );
+        let localFile = exts
+          .map((e) => path.join(dir, basename + "." + e))
+          .find((f) => fs.existsSync(f));
+        let wf = workspace.getWorkspaceFolder(document.uri);
+        let globalStyle: any = [];
+        if (wf) {
+          let files = ["miniprogram/app.wxss"].map(
+            (f) => wf && path.resolve(wf.uri.fsPath, f)
+          );
+          globalStyle = files.map((file) => {
+            return file ? parseStyleFile(file) : [];
+          });
+        }
+
+        if (localFile) {
+          let r: any = [];
+          console.log([...[parseStyleFile(localFile)], ...globalStyle]);
+          [...[parseStyleFile(localFile)], ...globalStyle].forEach((item) => {
+            console.log(item.styles);
+            r.push(
+              ...item.styles.map((style: any) => {
+                return new CompletionItem(style.name, CompletionItemKind.Field);
+              })
+            );
+          });
+          console.log(r);
+          return [...r];
+        }
       }
     }
   }

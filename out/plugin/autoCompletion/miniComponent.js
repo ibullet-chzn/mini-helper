@@ -28,36 +28,39 @@ function provideCompletionItems(document, position, token, context) {
     let inputCharacter = context.triggerCharacter || helper_1.getLastChar(document, position);
     // 解析用户输入的标签内容
     const wxmlTag = wxmlHelper_1.getWxmlTag(document, position);
-    switch (inputCharacter) {
-        case ":":
-            if (wxmlTag) {
-                return [
-                    ...wxmlHelper_1.searchWxmlAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchBubblingEvents(wxmlTag),
-                ];
-            }
-        case " ":
-        case "\n":
-            if (wxmlTag) {
-                return [
-                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
-                    ...wxmlHelper_1.searchBindingEvents(),
-                ];
-            }
-        default:
-            if (inputCharacter >= "a" && inputCharacter <= "z") {
-                if (!wxmlTag) {
-                    return wxmlHelper_1.searchWxmlTagName(inputCharacter);
+    if (wxmlTag && !wxmlTag.onAttrValue) {
+        switch (inputCharacter) {
+            case ":":
+                if (wxmlTag) {
+                    return [
+                        ...wxmlHelper_1.searchWxmlAttributes(wxmlTag),
+                        ...wxmlHelper_1.searchBubblingEvents(wxmlTag),
+                    ];
                 }
-                return [
-                    ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
-                    ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
-                    ...wxmlHelper_1.searchBindingEvents(),
-                ];
-            }
-            return [];
+            case " ":
+            case "\n":
+                if (wxmlTag) {
+                    return [
+                        ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
+                        ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
+                        ...wxmlHelper_1.searchBindingEvents(),
+                    ];
+                }
+            default:
+                if (inputCharacter >= "a" && inputCharacter <= "z") {
+                    if (!wxmlTag) {
+                        return wxmlHelper_1.searchWxmlTagName(inputCharacter);
+                    }
+                    return [
+                        ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
+                        ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
+                        ...wxmlHelper_1.searchBindingEvents(),
+                    ];
+                }
+                return [];
+        }
     }
+    return [];
 }
 /**
  * 光标选中当前自动补全item时触发动作，一般情况下无需处理

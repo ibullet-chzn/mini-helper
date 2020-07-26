@@ -1,56 +1,100 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
 const vscode_1 = require("vscode");
-const api_1 = require("../mini/api");
-/**
- * 获取输入环境
- */
-exports.getWxInput = (doc, pos) => {
-    /**
-     * 处理正在输入的词
-     * 1 利用vs code提供的api
-     * 2 解析光标前的单词(以空格分割)
-     */
-    const vsInputWord = doc.getWordRangeAtPosition(pos, /\b[\w.]+$/);
-    return {
-        input: doc.getText(vsInputWord),
-    };
-};
-/**
- * 匹配内置函数
- */
-exports.searchBuiltInFunctions = () => {
-    let globalBuiltInFunctions = [];
-    api_1.BuiltInFunctions.forEach((item) => {
-        globalBuiltInFunctions.push(item);
-    });
-    return globalBuiltInFunctions.map((item) => {
-        let globalBuiltInFunction = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
-        if (item.command) {
-            globalBuiltInFunction.command = item.command;
-        }
-        globalBuiltInFunction.insertText = item.insertText;
-        globalBuiltInFunction.documentation = item.documentation;
-        return globalBuiltInFunction;
-    });
-};
-/**
- * 匹配微信api
- */
-exports.searchWxApis = (wxInput) => {
-    const { input } = wxInput;
-    if (input === "wx.") {
-        let globalWxApis = [];
-        api_1.WxApis.forEach((item) => {
-            globalWxApis.push(item);
-        });
-        return globalWxApis.map((item) => {
-            let globalWxApi = new vscode_1.CompletionItem(item.label, vscode_1.CompletionItemKind.Field);
-            globalWxApi.insertText = item.insertText;
-            globalWxApi.documentation = item.documentation;
-            return globalWxApi;
-        });
+const styleRegexp = /\.[a-zA-Z][\w-\d_]*/g;
+const styleWithDocRegexp = /\/\*([\s\S]*?)\*\/[\s\r\n]*[^\.\{\}]*\.([a-zA-Z][\w-\d_]*)/g;
+const styleSingleCommentRegexp = /\/\/.*/g;
+const styleMultipleCommentRegExp = /\/\*[\s\S]*?\*\//g;
+const startStarRegexp = /^\s*\*+ ?/gm;
+const fileCache = {};
+/** 全局匹配 */
+function match(content, regexp) {
+    let mat;
+    let res = [];
+    // tslint:disable:no-conditional-assignment
+    while ((mat = regexp.exec(content))) {
+        res.push(mat);
     }
-    return [];
+    return res;
+}
+exports.match = match;
+/** 根据文件内容和位置，获取 vscode 的 Position 对象 */
+function getPositionFromIndex(content, index) {
+    let text = content.substring(0, index);
+    let lines = text.split(/\r?\n/);
+    let line = lines.length - 1;
+    return new vscode_1.Position(line, lines[line].length);
+}
+exports.getPositionFromIndex = getPositionFromIndex;
+function replacer(raw) {
+    return " ".repeat(raw.length);
+}
+function parseDoc(doc) {
+    return doc.replace(startStarRegexp, "").trim();
+}
+const quickParseStyle = (styleContent, { unique } = {}) => {
+    let style = [];
+    let content = styleContent
+        .replace(styleSingleCommentRegexp, replacer) // 去除单行注释
+        .replace(styleMultipleCommentRegExp, replacer); // 去除多行注释
+    match(content, styleRegexp).forEach((mat) => {
+        const name = mat[0].substr(1);
+        if (!unique || !style.find((s) => s.name === name)) {
+            style.push({
+                doc: "",
+                pos: getPositionFromIndex(content, mat.index),
+                name,
+            });
+        }
+    });
+    // 再来获取带文档的 className
+    styleContent.replace(styleWithDocRegexp, (raw, doc, name) => {
+        style.forEach((s) => {
+            if (s.name === name) {
+                s.doc = parseDoc(doc);
+            }
+            return s.name === name;
+        });
+        return "";
+    });
+    return style;
+};
+/**
+ * 解析样式文件
+ */
+exports.parseStyleFile = (file) => {
+    try {
+        let cache = fileCache[file];
+        let editor = vscode_1.window.visibleTextEditors.find((e) => e.document.fileName === file);
+        if (editor) {
+            let content = editor.document.getText();
+            return {
+                file,
+                styles: quickParseStyle(content),
+            };
+        }
+        else {
+            const stat = fs.statSync(file);
+            if (cache && stat.mtime <= cache.mtime) {
+                return cache.value;
+            }
+            cache = {
+                mtime: stat.mtime,
+                value: {
+                    file,
+                    styles: quickParseStyle(fs.readFileSync(file).toString()),
+                },
+            };
+            fileCache[file] = cache;
+            return cache.value;
+        }
+    }
+    catch (e) {
+        return {
+            file,
+            styles: [],
+        };
+    }
 };
 //# sourceMappingURL=wxssHelper.js.map

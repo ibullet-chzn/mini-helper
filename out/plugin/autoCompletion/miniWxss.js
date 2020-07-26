@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const path = require("path");
 const vscode_1 = require("vscode");
 const helper_1 = require("../../lib/helper");
 const wxmlHelper_1 = require("../../lib/wxmlHelper");
+const wxssHelper_1 = require("../../lib/wxssHelper");
 function default_1(context) {
     // 根据微信文档 获取需要自动提示的字符
     let disposable = vscode_1.languages.registerCompletionItemProvider("wxml", {
@@ -34,8 +37,32 @@ function provideCompletionItems(document, position, token, context) {
             if (inputCharacter === " " ||
                 (inputCharacter >= "a" && inputCharacter <= "z") ||
                 (inputCharacter >= "A" && inputCharacter <= "Z")) {
-                console.log("搜索");
-                return [];
+                let exts = ["wxss"];
+                let dir = path.dirname(document.fileName);
+                let basename = path.basename(document.fileName, path.extname(document.fileName));
+                let localFile = exts
+                    .map((e) => path.join(dir, basename + "." + e))
+                    .find((f) => fs.existsSync(f));
+                let wf = vscode_1.workspace.getWorkspaceFolder(document.uri);
+                let globalStyle = [];
+                if (wf) {
+                    let files = ["miniprogram/app.wxss"].map((f) => wf && path.resolve(wf.uri.fsPath, f));
+                    globalStyle = files.map((file) => {
+                        return file ? wxssHelper_1.parseStyleFile(file) : [];
+                    });
+                }
+                if (localFile) {
+                    let r = [];
+                    console.log([...[wxssHelper_1.parseStyleFile(localFile)], ...globalStyle]);
+                    [...[wxssHelper_1.parseStyleFile(localFile)], ...globalStyle].forEach((item) => {
+                        console.log(item.styles);
+                        r.push(...item.styles.map((style) => {
+                            return new vscode_1.CompletionItem(style.name, vscode_1.CompletionItemKind.Field);
+                        }));
+                    });
+                    console.log(r);
+                    return [...r];
+                }
             }
         }
     }

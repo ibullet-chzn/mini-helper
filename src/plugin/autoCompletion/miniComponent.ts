@@ -56,36 +56,39 @@ function provideCompletionItems(
     context.triggerCharacter || getLastChar(document, position);
   // 解析用户输入的标签内容
   const wxmlTag = getWxmlTag(document, position);
-  switch (inputCharacter) {
-    case ":":
-      if (wxmlTag) {
-        return [
-          ...searchWxmlAttributes(wxmlTag),
-          ...searchBubblingEvents(wxmlTag),
-        ];
-      }
-    case " ":
-    case "\n":
-      if (wxmlTag) {
-        return [
-          ...searchCommonAttributes(wxmlTag),
-          ...searchWxmlTagAttribute(wxmlTag),
-          ...searchBindingEvents(),
-        ];
-      }
-    default:
-      if (inputCharacter >= "a" && inputCharacter <= "z") {
-        if (!wxmlTag) {
-          return searchWxmlTagName(inputCharacter);
+  if (wxmlTag && !wxmlTag.onAttrValue) {
+    switch (inputCharacter) {
+      case ":":
+        if (wxmlTag) {
+          return [
+            ...searchWxmlAttributes(wxmlTag),
+            ...searchBubblingEvents(wxmlTag),
+          ];
         }
-        return [
-          ...searchCommonAttributes(wxmlTag),
-          ...searchWxmlTagAttribute(wxmlTag),
-          ...searchBindingEvents(),
-        ];
-      }
-      return [] as any;
+      case " ":
+      case "\n":
+        if (wxmlTag) {
+          return [
+            ...searchCommonAttributes(wxmlTag),
+            ...searchWxmlTagAttribute(wxmlTag),
+            ...searchBindingEvents(),
+          ];
+        }
+      default:
+        if (inputCharacter >= "a" && inputCharacter <= "z") {
+          if (!wxmlTag) {
+            return searchWxmlTagName(inputCharacter);
+          }
+          return [
+            ...searchCommonAttributes(wxmlTag),
+            ...searchWxmlTagAttribute(wxmlTag),
+            ...searchBindingEvents(),
+          ];
+        }
+        return [] as any;
+    }
   }
+  return [] as any;
 }
 
 /**
