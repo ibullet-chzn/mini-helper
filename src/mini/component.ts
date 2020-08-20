@@ -228,4 +228,64 @@ export const WxmlSnippets: WxmlSnippet[] = [
     insertText: new SnippetString("<cover-view $1>$0</cover-view>"),
     documentation: new MarkdownString("### 覆盖在原生组件之上的文本视图"),
   },
+  {
+    label: "cover-image",
+    attribute: [
+      {
+        label: "src",
+        type: "string",
+        default: "",
+        required: false,
+        version: "1.4.0",
+        documentation:
+          "图标路径，支持临时路径、网络地址（1.6.0起支持）、云文件ID（2.2.3起支持）",
+        insertText: new SnippetString('src="$0"'),
+      },
+      {
+        label: "bindload",
+        type: "eventhandle",
+        default: "",
+        required: false,
+        version: "2.1.0",
+        documentation: "图片加载成功时触发",
+        insertText: new SnippetString('src="$0"'),
+      },
+      {
+        label: "binderror",
+        type: "eventhandle",
+        default: "",
+        required: false,
+        version: "2.1.0",
+        documentation: "图片加载失败时触发",
+        insertText: new SnippetString('src="$0"'),
+      },
+    ],
+    insertText: new SnippetString("<cover-image $1>$0</cover-image>"),
+    documentation: new MarkdownString(
+      "### 覆盖在原生组件之上的图片视图。可覆盖的原生组件同cover-view，支持嵌套在cover-view里。"
+    ),
+  },
+  {
+    label: "scroll-view",
+    attribute: [
+      {
+        label: "scroll-x",
+        type: "boolean",
+        default: "false",
+        required: false,
+        documentation: "允许横向滚动",
+        insertText: new SnippetString("scroll-x"),
+      },
+      {
+        label: "scroll-y",
+        type: "boolean",
+        default: "false",
+        required: false,
+        documentation: "允许纵向滚动",
+        insertText: new SnippetString("scroll-y"),
+      },
+    ],
+    insertText: new SnippetString("<cover-view $1>$0</cover-view>"),
+    documentation: new MarkdownString("### 覆盖在原生组件之上的文本视图"),
+  },
 ];

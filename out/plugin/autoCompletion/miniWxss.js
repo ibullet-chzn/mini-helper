@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
 const vscode_1 = require("vscode");
+const config_1 = require("../../lib/config");
 const helper_1 = require("../../lib/helper");
 const wxmlHelper_1 = require("../../lib/wxmlHelper");
 const wxssHelper_1 = require("../../lib/wxssHelper");
@@ -37,6 +38,8 @@ function provideCompletionItems(document, position, token, context) {
             if (inputCharacter === " " ||
                 (inputCharacter >= "a" && inputCharacter <= "z") ||
                 (inputCharacter >= "A" && inputCharacter <= "Z")) {
+                const { wxssGlobalPath } = config_1.getConfig();
+                console.log(wxssGlobalPath);
                 let exts = ["wxss"];
                 let dir = path.dirname(document.fileName);
                 let basename = path.basename(document.fileName, path.extname(document.fileName));
@@ -46,7 +49,7 @@ function provideCompletionItems(document, position, token, context) {
                 let wf = vscode_1.workspace.getWorkspaceFolder(document.uri);
                 let globalStyle = [];
                 if (wf) {
-                    let files = ["miniprogram/app.wxss"].map((f) => wf && path.resolve(wf.uri.fsPath, f));
+                    let files = wxssGlobalPath.map((f) => wf && path.resolve(wf.uri.fsPath, f));
                     globalStyle = files.map((file) => {
                         return file ? wxssHelper_1.parseStyleFile(file) : [];
                     });
@@ -60,7 +63,6 @@ function provideCompletionItems(document, position, token, context) {
                             return new vscode_1.CompletionItem(style.name, vscode_1.CompletionItemKind.Field);
                         }));
                     });
-                    console.log(r);
                     return [...r];
                 }
             }

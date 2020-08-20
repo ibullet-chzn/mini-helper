@@ -3,6 +3,7 @@
 	"displayName": "mini-helper",
 	"description": "mini-helper",
 	"version": "0.0.1",
+	"publisher": "ibullet",
 	"engines": {
 		"vscode": "^1.43.0"
 	},
@@ -22,40 +23,16 @@
 		"configuration": {
 			"title": "Mini-helper",
 			"properties": {
-				"miniHelper.is": {
-					"type": "boolean",
-					"default": false,
-					"description": "miniHelper is."
-				},
-				"miniHelper.helper.number": {
-					"type": "number",
-					"default": 20,
-					"description": "miniHelper number."
-				},
-				"miniHelper.helper.position": {
-					"type": "string",
-					"default": "right",
-					"enum": [
-						"left",
-						"right"
-					],
-					"enumDescriptions": [
-						"left descriptions",
-						"right descriptions"
-					]
-				},
-				"miniHelper.helper.text": {
-					"type": "string",
-					"default": "text",
-					"description": "miniHelper text."
-				},
-				"miniHelper.helper.canNull": {
-					"type": [
-						"string",
-						"null"
-					],
-					"default": null,
-					"description": "miniHelper canNull."
+				"miniHelper.wxssGlobalPath": {
+					"type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "app.wxss"
+          ],
+          "description": "WXSS全局提示配置 默认根目录下的 app.wxss 可自行添加其他路径"
 				}
 			}
 		},

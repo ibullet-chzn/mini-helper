@@ -12,9 +12,10 @@ import {
   CompletionItemKind,
 } from "vscode";
 
+import { getConfig } from "../../lib/config";
 import { getLastChar } from "../../lib/helper";
 import { getWxmlTag } from "../../lib/wxmlHelper";
-import { StyleFile, parseStyleFile } from "../../lib/wxssHelper";
+import { parseStyleFile } from "../../lib/wxssHelper";
 
 export default function (context: ExtensionContext) {
   // 根据微信文档 获取需要自动提示的字符
@@ -60,6 +61,8 @@ function provideCompletionItems(
         (inputCharacter >= "a" && inputCharacter <= "z") ||
         (inputCharacter >= "A" && inputCharacter <= "Z")
       ) {
+        const { wxssGlobalPath } = getConfig();
+        console.log(wxssGlobalPath);
         let exts = ["wxss"];
         let dir = path.dirname(document.fileName);
         let basename = path.basename(
@@ -72,10 +75,10 @@ function provideCompletionItems(
         let wf = workspace.getWorkspaceFolder(document.uri);
         let globalStyle: any = [];
         if (wf) {
-          let files = ["miniprogram/app.wxss"].map(
-            (f) => wf && path.resolve(wf.uri.fsPath, f)
+          let files = wxssGlobalPath.map(
+            (f: string) => wf && path.resolve(wf.uri.fsPath, f)
           );
-          globalStyle = files.map((file) => {
+          globalStyle = files.map((file: string) => {
             return file ? parseStyleFile(file) : [];
           });
         }
@@ -91,7 +94,6 @@ function provideCompletionItems(
               })
             );
           });
-          console.log(r);
           return [...r];
         }
       }
