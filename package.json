@@ -2,7 +2,7 @@
 	"name": "mini-helper",
 	"displayName": "mini-helper",
 	"description": "mini-helper",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "ibullet",
 	"engines": {
 		"vscode": "^1.43.0"
@@ -25,14 +25,14 @@
 			"properties": {
 				"miniHelper.wxssGlobalPath": {
 					"type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "default": [
-            "app.wxss"
-          ],
-          "description": "WXSS全局提示配置 默认根目录下的 app.wxss 可自行添加其他路径"
+					"items": {
+						"type": "string"
+					},
+					"uniqueItems": true,
+					"default": [
+						"app.wxss"
+					],
+					"description": "WXSS全局提示配置 默认根目录下的 app.wxss 可自行添加其他路径"
 				}
 			}
 		},
