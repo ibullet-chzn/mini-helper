@@ -4,7 +4,6 @@ const vscode_1 = require("vscode");
 const helper_1 = require("../../lib/helper");
 const wxmlHelper_1 = require("../../lib/wxmlHelper");
 function default_1(context) {
-    // 根据微信文档 获取需要自动提示的字符
     let disposable = vscode_1.languages.registerCompletionItemProvider("wxml", {
         provideCompletionItems,
         resolveCompletionItem,
@@ -48,9 +47,6 @@ function provideCompletionItems(document, position, token, context) {
                 }
             default:
                 if (inputCharacter >= "a" && inputCharacter <= "z") {
-                    if (!wxmlTag) {
-                        return wxmlHelper_1.searchWxmlTagName(inputCharacter);
-                    }
                     return [
                         ...wxmlHelper_1.searchCommonAttributes(wxmlTag),
                         ...wxmlHelper_1.searchWxmlTagAttribute(wxmlTag),
@@ -59,6 +55,9 @@ function provideCompletionItems(document, position, token, context) {
                 }
                 return [];
         }
+    }
+    else if (!wxmlTag) {
+        return wxmlHelper_1.searchWxmlTagName();
     }
     return [];
 }

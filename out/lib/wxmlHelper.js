@@ -125,7 +125,7 @@ exports.removeDuplicateAttribute = (wxmlTag, attribute) => {
 /**
  * 匹配标签名
  */
-exports.searchWxmlTagName = (inputCharacter) => {
+exports.searchWxmlTagName = () => {
     let wxmlCompletionItems = [];
     component_1.WxmlSnippets.forEach((item) => {
         wxmlCompletionItems.push(item);
@@ -184,7 +184,6 @@ exports.searchBindingEvents = () => {
  * todo: 区别微信内置属性 并去重
  */
 exports.searchBubblingEvents = (wxmlTag) => {
-    console.log(wxmlTag);
     if (BindingEventsArray.indexOf(wxmlTag.input) === -1) {
         return [];
     }

@@ -168,7 +168,7 @@ export const removeDuplicateAttribute = (
 /**
  * 匹配标签名
  */
-export const searchWxmlTagName = (inputCharacter: string) => {
+export const searchWxmlTagName = () => {
   let wxmlCompletionItems: WxmlSnippet[] = [];
   WxmlSnippets.forEach((item: WxmlSnippet) => {
     wxmlCompletionItems.push(item);
@@ -237,7 +237,6 @@ export const searchBindingEvents = () => {
  * todo: 区别微信内置属性 并去重
  */
 export const searchBubblingEvents = (wxmlTag: MiniHelper.WxmlTag) => {
-  console.log(wxmlTag);
   if (BindingEventsArray.indexOf(wxmlTag.input) === -1) {
     return [];
   }

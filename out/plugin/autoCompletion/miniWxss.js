@@ -39,7 +39,6 @@ function provideCompletionItems(document, position, token, context) {
                 (inputCharacter >= "a" && inputCharacter <= "z") ||
                 (inputCharacter >= "A" && inputCharacter <= "Z")) {
                 const { wxssGlobalPath } = config_1.getConfig();
-                console.log(wxssGlobalPath);
                 let exts = ["wxss"];
                 let dir = path.dirname(document.fileName);
                 let basename = path.basename(document.fileName, path.extname(document.fileName));
@@ -56,9 +55,7 @@ function provideCompletionItems(document, position, token, context) {
                 }
                 if (localFile) {
                     let r = [];
-                    console.log([...[wxssHelper_1.parseStyleFile(localFile)], ...globalStyle]);
                     [...[wxssHelper_1.parseStyleFile(localFile)], ...globalStyle].forEach((item) => {
-                        console.log(item.styles);
                         r.push(...item.styles.map((style) => {
                             return new vscode_1.CompletionItem(style.name, vscode_1.CompletionItemKind.Field);
                         }));

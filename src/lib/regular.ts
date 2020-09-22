@@ -14,3 +14,7 @@ export const REGEXP_TAG_ATTR_INPUT = /\b[\w-:.]+$/;
  * 匹配正在输入的标签名
  */
 export const REGEXP_TAG_ATTR_NAME = /\s([\w-:.]+)=%*$/;
+/**
+ * 匹配最后一个空白符号到结尾的字符
+ */
+export const REGEXP_LASTBlANK_END = /\s([.\w]+)$/;

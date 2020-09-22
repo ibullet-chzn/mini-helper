@@ -62,7 +62,6 @@ function provideCompletionItems(
         (inputCharacter >= "A" && inputCharacter <= "Z")
       ) {
         const { wxssGlobalPath } = getConfig();
-        console.log(wxssGlobalPath);
         let exts = ["wxss"];
         let dir = path.dirname(document.fileName);
         let basename = path.basename(
@@ -85,9 +84,7 @@ function provideCompletionItems(
 
         if (localFile) {
           let r: any = [];
-          console.log([...[parseStyleFile(localFile)], ...globalStyle]);
           [...[parseStyleFile(localFile)], ...globalStyle].forEach((item) => {
-            console.log(item.styles);
             r.push(
               ...item.styles.map((style: any) => {
                 return new CompletionItem(style.name, CompletionItemKind.Field);

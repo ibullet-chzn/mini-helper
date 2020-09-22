@@ -8,7 +8,7 @@ function default_1(context) {
     let disposable = vscode.languages.registerCompletionItemProvider(["javascript", "typescript"], {
         provideCompletionItems,
         resolveCompletionItem,
-    }, ".");
+    }, ".", "\n");
     context.subscriptions.push(disposable);
 }
 exports.default = default_1;
@@ -28,17 +28,32 @@ function provideCompletionItems(document, position, token, context) {
     }
     // 用户输入的最后一个字符
     let inputCharacter = context.triggerCharacter || helper_1.getLastChar(document, position);
-    console.log(inputCharacter);
+    // 正在输入的词
     const wxInput = apiHelper_1.getWxInput(document, position);
+    // 匹配api属性
+    const apiTag = apiHelper_1.getApiTag(document, position);
+    console.log(inputCharacter);
+    console.log(apiTag);
     switch (inputCharacter) {
         case ".":
             return [...apiHelper_1.searchWxApis(wxInput)];
-        default:
-            if (inputCharacter >= "a" && inputCharacter <= "z") {
+        case " ":
+        case "\n":
+            if (apiTag) {
+                return [...apiHelper_1.searchWxApiParams(apiTag.name.split("."))];
+            }
+            else {
                 return [...apiHelper_1.searchBuiltInFunctions()];
             }
-            else if (inputCharacter >= "A" && inputCharacter <= "Z") {
-                return [...apiHelper_1.searchBuiltInFunctions()];
+        default:
+            if ((inputCharacter >= "a" && inputCharacter <= "z") ||
+                (inputCharacter >= "A" && inputCharacter <= "Z")) {
+                if (apiTag) {
+                    return [...apiHelper_1.searchWxApiParams(apiTag.name.split("."))];
+                }
+                else {
+                    return [...apiHelper_1.searchBuiltInFunctions()];
+                }
             }
             return [];
     }

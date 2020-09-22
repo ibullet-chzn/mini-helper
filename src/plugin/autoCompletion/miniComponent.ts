@@ -20,7 +20,6 @@ import {
 } from "../../lib/wxmlHelper";
 
 export default function (context: ExtensionContext) {
-  // 根据微信文档 获取需要自动提示的字符
   let disposable = languages.registerCompletionItemProvider(
     "wxml",
     {
@@ -76,9 +75,6 @@ function provideCompletionItems(
         }
       default:
         if (inputCharacter >= "a" && inputCharacter <= "z") {
-          if (!wxmlTag) {
-            return searchWxmlTagName(inputCharacter);
-          }
           return [
             ...searchCommonAttributes(wxmlTag),
             ...searchWxmlTagAttribute(wxmlTag),
@@ -87,6 +83,8 @@ function provideCompletionItems(
         }
         return [] as any;
     }
+  } else if (!wxmlTag) {
+    return searchWxmlTagName();
   }
   return [] as any;
 }

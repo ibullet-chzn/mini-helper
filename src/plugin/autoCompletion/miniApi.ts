@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
 import { getLastChar } from "../../lib/helper";
-import { getProjectPath } from "../../utils";
 
 import {
   getWxInput,
+  getBracketRange,
+  getApiTag,
   searchBuiltInFunctions,
   searchWxApis,
+  searchWxApiParams,
 } from "../../lib/apiHelper";
 
 export default function (context: vscode.ExtensionContext) {
@@ -16,7 +18,8 @@ export default function (context: vscode.ExtensionContext) {
       provideCompletionItems,
       resolveCompletionItem,
     },
-    "."
+    ".",
+    "\n"
   );
   context.subscriptions.push(disposable);
 }
@@ -43,18 +46,32 @@ function provideCompletionItems(
   // 用户输入的最后一个字符
   let inputCharacter =
     context.triggerCharacter || getLastChar(document, position);
-  console.log(inputCharacter);
-
+  // 正在输入的词
   const wxInput = getWxInput(document, position);
-
+  // 匹配api属性
+  const apiTag = getApiTag(document, position);
+  console.log(inputCharacter);
+  console.log(apiTag);
   switch (inputCharacter) {
     case ".":
       return [...searchWxApis(wxInput)];
+    case " ":
+    case "\n":
+      if (apiTag) {
+        return [...searchWxApiParams(apiTag.name.split("."))];
+      } else {
+        return [...searchBuiltInFunctions()];
+      }
     default:
-      if (inputCharacter >= "a" && inputCharacter <= "z") {
-        return [...searchBuiltInFunctions()];
-      } else if (inputCharacter >= "A" && inputCharacter <= "Z") {
-        return [...searchBuiltInFunctions()];
+      if (
+        (inputCharacter >= "a" && inputCharacter <= "z") ||
+        (inputCharacter >= "A" && inputCharacter <= "Z")
+      ) {
+        if (apiTag) {
+          return [...searchWxApiParams(apiTag.name.split("."))];
+        } else {
+          return [...searchBuiltInFunctions()];
+        }
       }
       return [] as any;
   }
