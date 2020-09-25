@@ -2,7 +2,7 @@
 	"name": "mini-helper",
 	"displayName": "mini-helper",
 	"description": "mini-helper",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"publisher": "ibullet",
 	"engines": {
 		"vscode": "^1.43.0"
