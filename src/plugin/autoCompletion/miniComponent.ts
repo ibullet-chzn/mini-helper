@@ -27,8 +27,7 @@ export default function (context: ExtensionContext) {
       resolveCompletionItem,
     },
     " ",
-    ":",
-    "\n"
+    ":"
   );
   context.subscriptions.push(disposable);
 }
