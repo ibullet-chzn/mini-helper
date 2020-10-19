@@ -7,7 +7,7 @@ function default_1(context) {
     let disposable = vscode_1.languages.registerCompletionItemProvider("wxml", {
         provideCompletionItems,
         resolveCompletionItem,
-    }, " ", ":", "\n");
+    }, " ", ":");
     context.subscriptions.push(disposable);
 }
 exports.default = default_1;
